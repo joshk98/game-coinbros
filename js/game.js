@@ -36,7 +36,7 @@ class Main {
     
     this.movePlayer();
 
-    if (this.player.y > 340 || this.player.y < 0) {
+    if (this.player.y > 850 || this.player.y < 0) {
       this.playerDie();
     }
 
@@ -126,7 +126,7 @@ class Main {
 
 let game = new Phaser.Game({
   width: 500,
-  height: 340,
+  height: 850,
   backgroundColor: '#3498db',
   physics: { default: 'arcade' },
   parent:'game',
