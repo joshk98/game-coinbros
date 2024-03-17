@@ -10,18 +10,56 @@ class Play {
     this.player = this.physics.add.sprite(80, 144, 'player');
     this.player.body.gravity.y = charGravity;
 
+    this.jumpSound = this.sound.add('jump');
+    this.coinSound = this.sound.add('coin');
+    this.deadSound = this.sound.add('dead');
+
+    this.anims.create({
+      key: 'right',
+      frames: this.anims.generateFrameNumbers('player', {frames: [4, 3, 5, 3]}),
+      frameRate: 4,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'left',
+      frames: this.anims.generateFrameNumbers('player', {frames: [1, 0, 2, 0]}),
+      frameRate: 4,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'rightEnemy',
+      frames: this.anims.generateFrameNumbers('enemy', {frames: [4, 3, 5, 3]}),
+      frameRate: 4,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'leftEnemy',
+      frames: this.anims.generateFrameNumbers('enemy', {frames: [1, 0, 2, 0]}),
+      frameRate: 4,
+      repeat: -1,
+    });
+
+    this.lastDirection = 'left'
+
+    // this.music =this.load.audio('music');
+    // this.music.loop = true;
+    // this.music.play();
+
     this.arrow = this.input.keyboard.createCursorKeys();
 
     this.createWorld();
     
     this.coin = this.physics.add.sprite(80, 128, 'coin');
 
-    this.scoreLabel = this.add.text(30, 25, 'Score: 0', { font: '18px Arial', fill: '#fff' });
+    this.scoreLabel = this.add.text(80, 128, 'Score: 0', { font: '18px Arial', fill: '#fff' });
     this.score = 0
 
     this.enemies = this.physics.add.group();
     this.time.addEvent({
-      delay: Phaser.Math.RND.between(2500, 4000),
+      delay: 5000,
       callback: () => this.addEnemy(),
       loop: true,
     });
@@ -29,7 +67,7 @@ class Play {
 
   update() {
     this.physics.collide(this.player, this.walls);
-    this.physics.collide(this.enemies, this.walls);
+    this.physics.collide(this.enemies, this.walls, this.enemyCollideWall, null, this);
     
     this.movePlayer();
 
@@ -50,15 +88,21 @@ class Play {
   movePlayer() {
     if (this.arrow.left.isDown) {
       this.player.body.velocity.x = -charSpeed;
+      this.player.anims.play('left', true);
+      this.lastDirection = 'left';
     }
     else if (this.arrow.right.isDown) {
       this.player.body.velocity.x = charSpeed;
+      this.player.anims.play('right', true);
+      this.lastDirection = 'right';
     }
     else {
       this.player.body.velocity.x = 0;
+      this.player.setFrame(this.lastDirection === 'left' ? 0 : 3);
     }
     if (this.arrow.up.isDown && this.player.body.onFloor()) {
       this.player.body.velocity.y = charJump;
+      this.jumpSound.play();
     }
   }
 
@@ -73,7 +117,9 @@ class Play {
   }
 
   playerDie() {
+    this.deadSound.play();
     this.scene.start('menu', { score: this.score });
+    // this.music.stop();
   }
 
   updateCoinPosition() {
@@ -106,7 +152,7 @@ class Play {
   takeCoin() {
     this.score +=1;
     this.scoreLabel.setText('Score: ' + this.score);
-
+    this.coinSound.play();
     this.updateCoinPosition();
   }
 
@@ -115,12 +161,26 @@ class Play {
 
     enemy.body.gravity.y = enemyGravity;
     enemy.body.velocity.x = Phaser.Math.RND.pick([-enemySpeed, enemySpeed]);
+    
+    if (enemy.body.velocity.x < 0) {
+        enemy.anims.play('leftEnemy', true);
+    } else {
+        enemy.anims.play('rightEnemy', true);
+    }
+
     enemy.body.bounce.x = 1;
-  
 
     this.time.addEvent({
-      delay: 10000,
-      callback: () => enemy.destroy(),
+        delay: 10000,
+        callback: () => enemy.destroy(),
     });
+  }
+
+  enemyCollideWall(enemy, wall) {
+    if (enemy.body.velocity.x < 0) {
+        enemy.anims.play('leftEnemy', true); 
+    } else {
+        enemy.anims.play('rightEnemy', true);
+    }
   }
 };

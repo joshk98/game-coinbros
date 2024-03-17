@@ -15,12 +15,12 @@ class Menu {
     let startLabel = this.add.text(80, 160, startText, { font: '15px Arial', fill: '#fff' });
     startLabel.setOrigin(0.5, 0.5);
 
-    this.upKey = this.input.keyboard.addKey('up')
+    this.anyKey = this.input.keyboard.addKey('up');
   }
 
   update() {
-    if (this.upKey.isDown) {
-      this.scene.start('play');
+    if (this.anyKey.isDown) {
+        this.scene.start('play');
     }
   }
 }
